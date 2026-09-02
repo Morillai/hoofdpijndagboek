@@ -209,7 +209,7 @@ export function InvoerSheet({ datum, existing, onSave, onDelete, onClose }: Prop
                 id="activiteit-anders"
                 type="text"
                 className="text-input"
-                placeholder="Bijv. museum, reis…"
+                placeholder=""
                 value={entry.activiteitAnders}
                 onChange={(e) => set('activiteitAnders', e.target.value)}
               />

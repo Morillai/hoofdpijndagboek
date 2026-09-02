@@ -56,9 +56,20 @@ export function Log({ entries, onSelect }: Props) {
                     )}
                     {e.overgegaan === 'nee' && <span>Niet over</span>}
                     {e.nekklachten && <span>Nek</span>}
+                    {e.warmeDouche === true && (
+                      <span>
+                        Douche
+                        {e.warmeDoucheGeholpen ? `: ${e.warmeDoucheGeholpen}` : ''}
+                      </span>
+                    )}
                     {e.medicatie && <span>{e.medicatie}</span>}
-                    {e.activiteiten.length > 0 && (
-                      <span>{e.activiteiten.slice(0, 2).join(', ')}</span>
+                    {(e.activiteiten.length > 0 || e.activiteitAnders?.trim()) && (
+                      <span>
+                        {[...e.activiteiten, e.activiteitAnders?.trim()]
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .join(', ')}
+                      </span>
                     )}
                   </div>
                   {e.notitie && <div className="log-item-note">{e.notitie}</div>}

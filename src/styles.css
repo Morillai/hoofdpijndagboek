@@ -319,6 +319,10 @@ textarea {
   margin-bottom: 4px;
 }
 
+.sub-field {
+  margin-top: 10px;
+}
+
 .chip-group,
 .toggle-row {
   display: flex;

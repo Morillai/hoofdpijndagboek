@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import type { DagEntry } from '../types'
+import { activiteitenLabel } from '../types'
 import {
   berekenSamenvatting,
   downloadBlob,
@@ -106,6 +107,15 @@ export function Export({ entries, onImport }: Props) {
               <dt>Medicatie</dt>
               <dd>{samenvatting.medicatieDagen} dagen</dd>
             </div>
+            <div>
+              <dt>Warme douche</dt>
+              <dd>
+                {samenvatting.warmeDoucheDagen}×
+                {samenvatting.warmeDoucheDagen > 0
+                  ? ` (hielp: ${samenvatting.warmeDoucheGeholpenDagen})`
+                  : ''}
+              </dd>
+            </div>
             {samenvatting.topActiviteiten.length > 0 && (
               <div className="full">
                 <dt>Top activiteiten</dt>
@@ -169,6 +179,8 @@ export function Export({ entries, onImport }: Props) {
                   <th>Medicatie</th>
                   <th>Slaap</th>
                   <th>Nek</th>
+                  <th>Douche</th>
+                  <th>Douche hielp</th>
                   <th>Notitie</th>
                 </tr>
               </thead>
@@ -183,7 +195,7 @@ export function Export({ entries, onImport }: Props) {
                       <td>{e.laterOntstaan ? 'ja' : ''}</td>
                       <td>{e.overgegaan ?? ''}</td>
                       <td>{e.locatie.join(', ')}</td>
-                      <td>{e.activiteiten.join(', ')}</td>
+                      <td>{activiteitenLabel(e)}</td>
                       <td>{e.medicatie ?? ''}</td>
                       <td>
                         {[e.slaapUren != null ? `${e.slaapUren}u` : '', e.slaapKwaliteit ?? '']
@@ -191,6 +203,10 @@ export function Export({ entries, onImport }: Props) {
                           .join(' / ')}
                       </td>
                       <td>{e.nekklachten ? 'ja' : ''}</td>
+                      <td>
+                        {e.warmeDouche === true ? 'ja' : e.warmeDouche === false ? 'nee' : ''}
+                      </td>
+                      <td>{e.warmeDoucheGeholpen ?? ''}</td>
                       <td>{e.notitie}</td>
                     </tr>
                   ))}

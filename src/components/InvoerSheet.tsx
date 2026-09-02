@@ -4,7 +4,9 @@ import {
   emptyEntry,
   LOCATIES,
   MEDICATIE_OPTIES,
+  normalizeEntry,
   type DagEntry,
+  type DoucheGeholpen,
   type Overgegaan,
 } from '../types'
 import { formatDatumNl, scoreColor } from '../export'
@@ -18,10 +20,12 @@ type Props = {
 }
 
 export function InvoerSheet({ datum, existing, onSave, onDelete, onClose }: Props) {
-  const [entry, setEntry] = useState<DagEntry>(() => existing ?? emptyEntry(datum))
+  const [entry, setEntry] = useState<DagEntry>(() =>
+    existing ? normalizeEntry(existing) : emptyEntry(datum),
+  )
 
   useEffect(() => {
-    setEntry(existing ?? emptyEntry(datum))
+    setEntry(existing ? normalizeEntry(existing) : emptyEntry(datum))
   }, [datum, existing])
 
   function toggle(list: string[], item: string): string[] {
@@ -106,6 +110,47 @@ export function InvoerSheet({ datum, existing, onSave, onDelete, onClose }: Prop
             </div>
           </section>
 
+          <section className="field">
+            <label className="field-label">Warme douche na opstaan?</label>
+            <div className="chip-group">
+              <button
+                type="button"
+                className={`chip-btn ${entry.warmeDouche === true ? 'active' : ''}`}
+                onClick={() => set('warmeDouche', true)}
+              >
+                Ja
+              </button>
+              <button
+                type="button"
+                className={`chip-btn ${entry.warmeDouche === false ? 'active' : ''}`}
+                onClick={() => {
+                  setEntry((e) => ({ ...e, warmeDouche: false, warmeDoucheGeholpen: null }))
+                }}
+              >
+                Nee
+              </button>
+            </div>
+            {entry.warmeDouche === true && (
+              <div className="sub-field">
+                <span className="sub-label">Heeft de douche geholpen?</span>
+                <div className="chip-group">
+                  {(['ja', 'beetje', 'nee'] as Exclude<DoucheGeholpen, null>[]).map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      className={`chip-btn ${entry.warmeDoucheGeholpen === g ? 'active' : ''}`}
+                      onClick={() =>
+                        set('warmeDoucheGeholpen', entry.warmeDoucheGeholpen === g ? null : g)
+                      }
+                    >
+                      {g === 'ja' ? 'Ja' : g === 'nee' ? 'Nee' : 'Beetje'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+
           {hasHoofdpijn && (
             <>
               <section className="field">
@@ -155,6 +200,19 @@ export function InvoerSheet({ datum, existing, onSave, onDelete, onClose }: Prop
                   {a}
                 </button>
               ))}
+            </div>
+            <div className="sub-field">
+              <label className="sub-label" htmlFor="activiteit-anders">
+                Anders
+              </label>
+              <input
+                id="activiteit-anders"
+                type="text"
+                className="text-input"
+                placeholder="Bijv. museum, reis…"
+                value={entry.activiteitAnders}
+                onChange={(e) => set('activiteitAnders', e.target.value)}
+              />
             </div>
           </section>
 

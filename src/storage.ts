@@ -1,12 +1,21 @@
 import type { DagEntry } from './types'
+import { emptyEntry } from './types'
 
 const STORAGE_KEY = 'hoofdpijndagboek-entries'
+
+function normalizeAll(raw: Record<string, Partial<DagEntry>>): Record<string, DagEntry> {
+  const out: Record<string, DagEntry> = {}
+  for (const [datum, entry] of Object.entries(raw)) {
+    out[datum] = { ...emptyEntry(datum), ...entry, datum }
+  }
+  return out
+}
 
 export function loadAll(): Record<string, DagEntry> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return {}
-    return JSON.parse(raw) as Record<string, DagEntry>
+    return normalizeAll(JSON.parse(raw) as Record<string, Partial<DagEntry>>)
   } catch {
     return {}
   }
@@ -37,7 +46,7 @@ export function importEntries(entries: DagEntry[], merge = true): number {
   let count = 0
   for (const entry of entries) {
     if (entry?.datum) {
-      all[entry.datum] = entry
+      all[entry.datum] = { ...emptyEntry(entry.datum), ...entry, datum: entry.datum }
       count++
     }
   }

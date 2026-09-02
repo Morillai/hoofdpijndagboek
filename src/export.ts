@@ -1,4 +1,5 @@
 import type { DagEntry } from './types'
+import { activiteitenLabel } from './types'
 
 export type Periode = '4weken' | '3maanden' | 'alles'
 
@@ -38,6 +39,8 @@ export type Samenvatting = {
   topActiviteiten: { naam: string; count: number }[]
   nekklachtenDagen: number
   medicatieDagen: number
+  warmeDoucheDagen: number
+  warmeDoucheGeholpenDagen: number
 }
 
 function topCounts(lists: string[][], limit = 5): { naam: string; count: number }[] {
@@ -57,15 +60,26 @@ export function berekenSamenvatting(entries: DagEntry[]): Samenvatting {
   const metPijn = entries.filter((e) => e.opgestaanMetHoofdpijn || e.laterOntstaan || e.score > 0)
   const scores = entries.map((e) => e.score)
   const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
+  const metDouche = entries.filter((e) => e.warmeDouche === true)
 
   return {
     totaalDagen: entries.length,
     dagenMetHoofdpijn: metPijn.length,
     percentageHoofdpijn: entries.length ? Math.round((metPijn.length / entries.length) * 100) : 0,
     gemiddeldeScore: Math.round(avg * 10) / 10,
-    topActiviteiten: topCounts(entries.map((e) => e.activiteiten)),
+    topActiviteiten: topCounts(
+      entries.map((e) => {
+        const list = [...e.activiteiten]
+        if (e.activiteitAnders?.trim()) list.push(e.activiteitAnders.trim())
+        return list
+      }),
+    ),
     nekklachtenDagen: entries.filter((e) => e.nekklachten).length,
     medicatieDagen: entries.filter((e) => e.medicatie).length,
+    warmeDoucheDagen: metDouche.length,
+    warmeDoucheGeholpenDagen: metDouche.filter(
+      (e) => e.warmeDoucheGeholpen === 'ja' || e.warmeDoucheGeholpen === 'beetje',
+    ).length,
   }
 }
 
@@ -89,6 +103,8 @@ export function toCsv(entries: DagEntry[]): string {
     'Slaap uren',
     'Slaap kwaliteit',
     'Nekklachten',
+    'Warme douche',
+    'Douche geholpen',
     'Notitie',
   ]
   const rows = entries
@@ -101,12 +117,14 @@ export function toCsv(entries: DagEntry[]): string {
         e.laterOntstaan ? 'ja' : 'nee',
         String(e.score),
         e.overgegaan ?? '',
-        e.activiteiten.join('; '),
+        activiteitenLabel(e),
         e.locatie.join('; '),
         e.medicatie ?? '',
         e.slaapUren != null ? String(e.slaapUren) : '',
         e.slaapKwaliteit ?? '',
         e.nekklachten ? 'ja' : 'nee',
+        e.warmeDouche === true ? 'ja' : e.warmeDouche === false ? 'nee' : '',
+        e.warmeDoucheGeholpen ?? '',
         e.notitie,
       ]
         .map(csvEscape)
